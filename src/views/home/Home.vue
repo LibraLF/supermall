@@ -63,13 +63,24 @@
         currentType: 'pop',
         isShowBackTop: false,
         tabOffsetTop: 0,
-        isTabFixed: false
+        isTabFixed: false,
+        saveY: 0
       }
     },
     computed: {
       showGoods() {
         return this.goods[this.currentType].list
       }
+    },
+    destroyed() {
+      console.log('destroyed');
+    },
+    activated() {
+      this.$refs.scroll.scrollTo(0,this.saveY,0)
+      this.$refs.scroll.refresh()
+    },
+    deactivated() {
+      this.saveY = this.$refs.scroll.getScrollY()
     },
     created() {
       //1.请求多行数据
@@ -107,7 +118,6 @@
         this.$refs.tabControl2.currentIndex = index;
       },
       backClick() {
-        //console.log(this.$refs.scroll);
         this.$refs.scroll.scrollTo(0,0)
       },
       contentScroll(position) {
