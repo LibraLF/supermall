@@ -1,6 +1,6 @@
 <template>
   <div class="goods-item" @click="goodsClick">
-    <img :src="goodsItem.show.img" alt="" @load="imageLoad">
+    <img :src="showImage" alt="" @load="imageLoad">
     <div class="goods-info">
       <p>{{goodsItem.title}}</p>
       <span class="price">{{goodsItem.price}}</span>
@@ -20,18 +20,31 @@
         }
       }
     },
+    computed: {
+      showImage() {
+        return this.goodsItem.image || this.goodsItem.show.img
+      }
+    },
     methods: {
       imageLoad() {
+        //由于home和detail页面都要使用(当图片加载完，重新scroll.refresh)
+        //方法一：
         this.$bus.$emit('itemImageLoad')
+        //方法二：
+        /*if (this.$route.path.indexOf('/home')){
+          this.$bus.$emit('homeImageLoad')
+        }else if(this.$route.path.indexOf('/detail')){
+          this.$bus.$emit('detailImageLoad')
+        }*/
       },
       goodsClick() {
-        /*this.$router.push({
+        //this.$router.push('/detail/'+this.goodsItem.iid)
+        this.$router.push({
           path: '/detail',
           query: {
             iid: this.goodsItem.iid
           }
-        })*/
-        this.$router.push('/detail/'+this.goodsItem.iid)
+        })
       }
     }
   }

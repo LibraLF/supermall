@@ -33,11 +33,10 @@
   import TabControl from "components/content/tabControl/TabControl";
   import GoodsList from "components/content/goods/GoodsList";
   import Scroll from "components/common/scroll/Scroll";
-  import BackTop from "components/content/backTop/BackTop";
   
   import {getHomeMultidata,getHomeGoods} from "network/home";
-  import {debounce} from 'common/utils'
-  
+  import {imageMixinLoad,backTopMixin} from "common/mixin";
+
 
   export default {
     name: "Home",
@@ -48,9 +47,9 @@
       NavBar,
       TabControl,
       GoodsList,
-      Scroll,
-      BackTop
+      Scroll
     },
+    mixins: [imageMixinLoad,backTopMixin],
     data() {
       return {
         banners: [],
@@ -61,26 +60,16 @@
           'sell': {page: 0, list: []}
         },
         currentType: 'pop',
-        isShowBackTop: false,
         tabOffsetTop: 0,
         isTabFixed: false,
-        saveY: 0
+        saveY: 0,
+        imageLoadListener: null
       }
     },
     computed: {
       showGoods() {
         return this.goods[this.currentType].list
       }
-    },
-    destroyed() {
-      console.log('destroyed');
-    },
-    activated() {
-      this.$refs.scroll.scrollTo(0,this.saveY,0)
-      this.$refs.scroll.refresh()
-    },
-    deactivated() {
-      this.saveY = this.$refs.scroll.getScrollY()
     },
     created() {
       //1.请求多行数据
@@ -91,12 +80,13 @@
       this.getHomeGoods('new')
       this.getHomeGoods('sell')
     },
-    mounted() {
-      //图片加载完成的事件监听
-      const refresh = debounce(this.$refs.scroll.refresh,50)
-      this.$bus.$on('itemImageLoad',() => {
-        refresh()
-      })
+    activated() {
+      this.$refs.scroll.scrollTo(0,this.saveY,0)
+      this.$refs.scroll.refresh()
+    },
+    deactivated() {
+      this.saveY = this.$refs.scroll.getScrollY()
+      this.$bus.$off('itemImageLoad',this.imageLoadListener)
     },
     methods: {
       /**
@@ -117,12 +107,9 @@
         this.$refs.tabControl1.currentIndex = index;
         this.$refs.tabControl2.currentIndex = index;
       },
-      backClick() {
-        this.$refs.scroll.scrollTo(0,0)
-      },
       contentScroll(position) {
         //1.判断BackTop是否显示
-        this.isShowBackTop = (-position.y) > 1000
+        this.showBackTopListener(position)
         //2.判断tabControl是否吸顶(position:fixed)
         this.isTabFixed = (-position.y) > this.tabOffsetTop
       },
@@ -148,6 +135,7 @@
           this.goods[type].page += 1
           //上拉加载更多数据
           this.$refs.scroll.finishPullUp()
+          this.$refs.scroll.refresh()
         })
       }
     }
