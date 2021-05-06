@@ -1,5 +1,5 @@
 <template>
-  <swiper :moveRatio="0.2">
+  <swiper :moveRatio="0.2" v-if="banners.length">
     <swiper-item v-for="item in banners">
       <a :href="item.link">
         <img :src="item.image" alt="" @load="imageLoad">

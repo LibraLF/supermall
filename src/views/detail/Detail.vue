@@ -11,7 +11,7 @@
       <detail-comment-info ref="comment" :comment-info="commentInfo"/>
       <goods-list ref="recommend" :goods="recommends"/>
     </scroll>
-    <detail-bottom-bar @addCart="addCart"/>
+    <detail-bottom-bar @addCart="addToCart"/>
     <back-top @click.native="backClick" v-show="isShowBackTop"/>
   </div>
 </template>
@@ -32,6 +32,7 @@
   import {getDetail,Goods,Shop,GoodsParam,getRecommends} from "network/detail";
   import {imageMixinLoad,backTopMixin} from "common/mixin";
   import {debounce} from "common/utils";
+  import {mapActions} from 'vuex'
 
   export default {
     name: "Detail",
@@ -106,6 +107,7 @@
       this.$bus.$off('itemImageLoad',this.imageLoadListener)
     },
     methods: {
+      ...mapActions(['addCart']),
       detailImageLoad() {
         this.$refs.scroll.refresh()
         this.getThemeTopY()
@@ -134,14 +136,21 @@
           }
         }
       },
-      addCart() {
+      addToCart() {
         const product = {}
         product.iid = this.iid;
         product.image = this.topImages[0];
         product.title = this.goods.title;
         product.desc = this.goods.desc;
         product.price = this.goods.realPrice;
-        this.$store.dispatch('addCart',product)
+        //this.$store.dispatch('addCart',product)
+        // this.$store.dispatch('addCart',product).then(res => {
+        //   console.log(res);
+        // })
+        this.addCart(product).then(res => {
+          console.log(res);
+          this.$toast.show(res,2000)
+        })
       }
     }
   }
